@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AL ADHWA PRIVATE SCHOOL - Islamic Education Lesson Planner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .content { padding: 40px; }
+        .form-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px 5px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .file-upload { margin: 20px 0; }
+        .file-input { display: none; }
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .file-label:hover { background: #229954; }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AL ADHWA PRIVATE SCHOOL</h1>
+            <p>AI-Powered Islamic Education Lesson Planner (MOE UAE)</p>
+        </div>
+        
+        <div class="content">
+            <div id="message" class="message"></div>
+            
+            <div class="form-container">
+                <form id="lessonForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester">Semester</label>
+                            <select id="semester" name="semester" required>
+                                <option value="">Select Semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grade">Grade</label>
+                            <select id="grade" name="grade" required>
+                                <option value="">Select Grade</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3">Grade 3</option>
+                                <option value="4">Grade 4</option>
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <select id="subject" name="subject" required>
+                                <option value="Islamic Education">Islamic Education</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="topic">Lesson Topic</label>
+                            <input type="text" id="topic" name="topic" placeholder="e.g. The Five Pillars of Islam, Importance of Salah, Stories of the Prophets..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="level">Difficulty Level</label>
+                            <select id="level" name="level" required>
+                                <option value="">Select Level</option>
+                                <option value="Introductory">Introductory</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Mastery">Mastery</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="standards">Standards</label>
+                            <select id="standards" name="standardType" required>
+                                <option value="MOE">MOE UAE – Islamic Education</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="period">Period</label>
+                            <select id="period" name="period" required>
+                                <option value="">Select Period</option>
+                                <option value="1">Period 1</option>
+                                <option value="2">Period 2</option>
+                                <option value="3">Period 3</option>
+                                <option value="4">Period 4</option>
+                                <option value="5">Period 5</option>
+                                <option value="6">Period 6</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="gifted" name="gifted"> Include Gifted & Talented extension
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="file-upload">
+                        <label for="file-upload" class="file-label">📎 Upload Syllabus / Reference (PDF, DOCX, etc.)</label>
+                        <input type="file" id="file-upload" name="file" accept=".pdf,.doc,.docx" class="file-input">
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button type="submit" class="btn" id="generateBtn">🚀 Generate & Download Lesson Plan</button>
+                        <button type="button" class="btn" onclick="clearForm()">🔄 Clear Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generating professional MOE-aligned Islamic Education lesson plan...</p>
+                <p style="font-size: 12px; color: #666;">(usually 15–40 seconds)</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        document.getElementById('lessonForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            if (document.getElementById('gifted').checked) {
+                formData.set('giftedTalented', 'yes');
+            } else {
+                formData.set('giftedTalented', 'no');
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Generating...';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('message')?.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/generate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${formData.get('topic')?.replace(/[^a-zA-Z0-9\s]/g, '_') || 'lesson'}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showMessage('✅ Lesson plan downloaded!', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage(`❌ ${error.error || 'Generation failed'}`, 'error');
+                }
+            } catch (err) {
+                showMessage('❌ Network error – please try again', 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Generate & Download Lesson Plan';
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            msg.style.display = 'block';
+        }
+
+        function clearForm() {
+            document.getElementById('lessonForm').reset();
+            document.getElementById('message')?.style.display = 'none';
+        }
+
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('file-upload')?.addEventListener('change', e => {
+            const name = e.target.files[0]?.name || 'No file selected';
+            document.querySelector('.file-label').textContent = `📎 ${name}`;
+        });
+    </script>
+</body>
+</html>
