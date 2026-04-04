@@ -69,7 +69,7 @@ function getStandardsFramework(subject, grade) {
   return 'Ministry of Education (MOE) UAE Standards for Islamic Education';
 }
 
-// ================= SHORTENED EXPERT SYSTEM PROMPT (Fixed Token Issue) =================
+// ================= SHORTENED EXPERT SYSTEM PROMPT =================
 const EXPERT_SYSTEM_PROMPT = `You are a senior Islamic Education curriculum specialist for UAE MOE schools. You create high-quality, inspection-ready, differentiated lesson plans aligned with MOE UAE Islamic Education standards, Bloom's Taxonomy, and DOK frameworks.
 
 CRITICAL RULES:
@@ -134,8 +134,7 @@ JSON OUTPUT STRUCTURE (return ONLY this):
 
 console.log('=== SERVER STARTUP ===');
 console.log('GROQ_API_KEY present:', !!process.env.GROQ_API_KEY);
-console.log('GROQ_API_KEY length:', process.env.GROQ_API_KEY?.length || 0);
-console.log('Using shortened expert prompt to avoid token limit');
+console.log('Using shortened expert prompt to avoid token limits');
 console.log('=== END STARTUP ===');
 
 // ================= STATIC FRONTEND =================
@@ -293,7 +292,7 @@ app.get('/', (req, res) => {
   res.send(html);
 });
 
-// ================= API ROUTE - OPTIMIZED =================
+// ================= API ROUTE - FIXED DEPRECATED setData =================
 app.post("/api/generate", upload.single("file"), async (req, res) => {
   console.log('\n=== NEW LESSON REQUEST ===');
 
@@ -306,14 +305,12 @@ app.post("/api/generate", upload.single("file"), async (req, res) => {
 
     const dokLevels = DOK_PROFILE[level.toLowerCase()] || DOK_PROFILE.introductory;
 
-    // Extract file if uploaded
     let syllabusContent = "";
     if (req.file) {
       syllabusContent = await extractFileContent(req.file.path);
       try { fs.unlinkSync(req.file.path); } catch (e) {}
     }
 
-    // Shortened user prompt
     const userPrompt = `Create a complete Islamic Education lesson plan for:
 
 Subject: ${subject}
@@ -336,19 +333,32 @@ Make every section 100% specific to "${topic}". Follow all rules in the system p
         { role: "user", content: userPrompt }
       ],
       temperature: 0.7,
-      max_tokens: 6500,                    // Reduced to stay safe
+      max_tokens: 6500,
       response_format: { type: "json_object" }
     });
 
     let aiResponse = completion.choices[0]?.message?.content;
 
-    // Clean and parse JSON
     const cleanJson = aiResponse.replace(/```json\n?|\n?```/g, '').trim();
     const aiData = JSON.parse(cleanJson);
 
-    // Prepare template data
+    // ================= FIXED TEMPLATE RENDERING (No more deprecated setData) =================
+    const templatePath = path.join(__dirname, 'LESSON PLAN TEMPLATE.docx');
+    if (!fs.existsSync(templatePath)) {
+      return res.status(500).json({ error: 'Template file not found at: ' + templatePath });
+    }
+
+    const templateContent = fs.readFileSync(templatePath);
+    const zip = new PizZip(templateContent);
+
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+
+    // Modern way: Pass data directly to render()
     const templateData = {
-      date: safe(new Date(date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })),
+      date: safe(new Date(date || Date.now()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })),
       semester: safe(semester || '1'),
       grade: safe(grade),
       subject: safe(subject),
@@ -365,9 +375,9 @@ Make every section 100% specific to "${topic}". Follow all rules in the system p
       outcomeMost: safe(aiData.outcomes?.most?.text),
       outcomeSome: safe(aiData.outcomes?.some?.text),
 
-      vocabulary: safe(Array.isArray(aiData.vocabulary) ? aiData.vocabulary.join('\n') : aiData.vocabulary),
-      resources: safe(Array.isArray(aiData.resources) ? aiData.resources.join('\n') : aiData.resources),
-      skills: safe(aiData.skills),
+      vocabulary: safe(Array.isArray(aiData.vocabulary) ? aiData.vocabulary.join('\n') : ''),
+      resources: safe(Array.isArray(aiData.resources) ? aiData.resources.join('\n') : ''),
+      skills: safe(aiData.skills || 'Critical thinking, collaboration, moral reasoning'),
 
       starter: safe(aiData.starter),
       teaching: safe(aiData.teaching),
@@ -382,12 +392,16 @@ Make every section 100% specific to "${topic}". Follow all rules in the system p
       indepUpper: safe(aiData.independent?.upper),
       indepOutstanding: safe(aiData.independent?.outstanding),
 
-      plenary: safe(Array.isArray(aiData.plenary) ? aiData.plenary.map((p,i) => `${i+1}. (${p.dok}) ${p.q}`).join('\n') : aiData.plenary),
+      plenary: safe(Array.isArray(aiData.plenary) 
+        ? aiData.plenary.map((p, i) => `${i+1}. (${p.dok}) ${p.q}`).join('\n') 
+        : 'Review questions'),
 
-      myIdentity: safe(aiData.identity ? `Domain: ${aiData.identity.domain} | Element: ${aiData.identity.element}\n\n${aiData.identity.description}` : ''),
-      identityDomain: safe(aiData.identity?.domain),
-      identityElement: safe(aiData.identity?.element),
-      identityDescription: safe(aiData.identity?.description),
+      myIdentity: safe(aiData.identity 
+        ? `Domain: ${aiData.identity.domain} | Element: ${aiData.identity.element}\n\n${aiData.identity.description}` 
+        : ''),
+      identityDomain: safe(aiData.identity?.domain || ''),
+      identityElement: safe(aiData.identity?.element || ''),
+      identityDescription: safe(aiData.identity?.description || ''),
 
       moralEducation: safe(aiData.moralEducation),
       steam: safe(aiData.steam),
@@ -397,32 +411,30 @@ Make every section 100% specific to "${topic}". Follow all rules in the system p
       alnObjectives: giftedTalented === 'yes' ? safe(aiData.alnObjective) : ''
     };
 
-    // Load and render template
-    const templatePath = path.join(__dirname, 'LESSON PLAN TEMPLATE.docx');
-    if (!fs.existsSync(templatePath)) {
-      return res.status(500).json({ error: 'Template file not found' });
-    }
+    doc.render(templateData);   // ← This is the correct modern way
 
-    const templateContent = fs.readFileSync(templatePath);
-    const zip = new PizZip(templateContent);
-    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-    doc.setData(templateData);
-    doc.render();
-
-    const buffer = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+    const buffer = doc.getZip().generate({ 
+      type: 'nodebuffer', 
+      compression: 'DEFLATE' 
+    });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename="Lesson_Plan_G${grade}_${topic.replace(/[^a-zA-Z0-9]/g, '_')}.docx"`);
     res.send(buffer);
 
-    console.log('Lesson plan generated successfully');
+    console.log('✅ Lesson plan generated and sent successfully');
 
   } catch (error) {
-    console.error('Error:', error.message);
-    if (error.status === 413) {
-      return res.status(413).json({ error: 'Request too large. Please try a shorter topic or contact admin.' });
+    console.error('Error generating lesson:', error.message);
+    
+    if (error.message.includes("setData")) {
+      return res.status(500).json({ error: 'Template compatibility issue. Please update docxtemplater.' });
     }
+    
+    if (error.status === 413) {
+      return res.status(413).json({ error: 'AI request too large. Try a shorter topic.' });
+    }
+
     res.status(500).json({ 
       error: 'Failed to generate lesson plan', 
       details: error.message 
@@ -430,12 +442,13 @@ Make every section 100% specific to "${topic}". Follow all rules in the system p
   }
 });
 
-// ================= SERVER START =================
+// ================= START SERVER =================
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════════════');
   console.log('   AL ADHWA PRIVATE SCHOOL - LESSON PLANNER');
   console.log('═══════════════════════════════════════════════');
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log('✅ Token limit issue resolved with shortened prompt');
+  console.log('✅ Deprecated setData fixed - using modern docxtemplater render()');
+  console.log('✅ Token limit issue resolved');
   console.log('═══════════════════════════════════════════════\n');
 });
