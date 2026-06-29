@@ -181,7 +181,7 @@ const UAE_ISLAMIC_CURRICULUM = {
     "Our Prophet Muhammad, peace be upon him, Nurtured by his Grandfather and Uncle", "Allah: the Great Creator", "Surat An-Nas",
     "My Prayer is the Light of my Life", "Righteousness is Good Character", "Surat Al-Maʻoun", "I Love the Creatures of my Lord",
     "Surat Al-Masad", "Asmaʻ bint Abi Bakr As-Sideeq (MayAllah be pleased with them)", "Etiquette of Eating", "Mercy",
-    "Surat Al-Kawthar", "Tolerance", ""The best amongst you is the one who learns the Qurʼan and teaches it."", "I Love Agriculture",
+    "Surat Al-Kawthar", "Tolerance", "The best amongst you is the one who learns the Quran and teaches it.", "I Love Agriculture",
     "Surat An-Nasr", "Slavery/worship", "Family roles", "Water blessings", "Adam's story", "Love for God", "Basic needs", "Religious/national days"
   ],
   "2": [
